@@ -1,0 +1,8 @@
+{
+  "name": "claude-squad",
+  "description": "AI development squad plugin — orchestrates Planner, Architect, Dev, Reviewer, and QA agents for full-stack feature development.",
+  "version": "1.0.0",
+  "author": {
+    "name": "danielschaurich"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "danielschaurich-plugins",
+  "owner": {
+    "name": "danielschaurich"
+  },
+  "plugins": [
+    {
+      "name": "claude-squad",
+      "description": "AI development squad — orchestrates Planner, Architect, Dev, Reviewer, and QA agents for full-stack feature development.",
+      "version": "1.0.0",
+      "source": "./plugins/claude-squad"
+    }
+  ]
+}
