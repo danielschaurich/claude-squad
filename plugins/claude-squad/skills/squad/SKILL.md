@@ -1,6 +1,6 @@
 ---
 name: squad
-description: Run a full development squad workflow (Planner → Architect → Dev → Reviewer → QA) to implement a feature or fix.
+description: Run a full development squad workflow (Planner → Test Planner → Architect → Dev → Reviewer → QA) to implement a feature or fix.
 ---
 
 # /squad — Development Squad Orchestrator
@@ -26,7 +26,23 @@ Research the relevant documentation using context7 MCP tools (resolve-library-id
 
 Wait for the planner output before proceeding.
 
-### Step 2: Architecture
+### Step 2: Test Planning
+
+Use the Agent tool with `subagent_type: "general-purpose"` and the test-planner agent prompt.
+
+Prompt the agent:
+```
+You are the Test Planner agent. Follow the instructions in the test-planner agent definition.
+
+Here is the Planner's output:
+[Insert planner output]
+
+Explore the project's existing test setup (test framework, patterns, file structure). Then define the complete test plan — every acceptance criterion must map to at least one concrete test case. This test plan will be the QA agent's target at the end of the workflow.
+```
+
+Wait for the test planner output before proceeding.
+
+### Step 3: Architecture
 
 Use the Agent tool with `subagent_type: "general-purpose"` and the architect agent prompt.
 
@@ -37,12 +53,15 @@ You are the Architect agent. Follow the instructions in the architect agent defi
 Here is the Planner's output:
 [Insert planner output]
 
-Read the existing codebase, then define the technical architecture: file structure, types, patterns, and implementation order.
+Here is the Test Plan (tests that must pass at the end):
+[Insert test planner output]
+
+Read the existing codebase, then define the technical architecture: file structure, types, patterns, and implementation order. Keep the test plan in mind — the architecture should make these tests straightforward to implement.
 ```
 
 Wait for the architect output before proceeding.
 
-### Step 3: Implementation
+### Step 4: Implementation
 
 Use the Agent tool with `subagent_type: "general-purpose"` and the dev agent prompt.
 
@@ -60,7 +79,7 @@ Implement the code following this plan exactly. Write clean, simple code.
 
 Wait for all dev agents to complete before proceeding.
 
-### Step 4: Code Review
+### Step 5: Code Review
 
 Use the Agent tool with `subagent_type: "general-purpose"` and the reviewer agent prompt.
 
@@ -79,7 +98,7 @@ The original plan was:
 - Run the Reviewer again on the fixes.
 - Repeat until APPROVED (max 3 cycles, then ask the user).
 
-### Step 5: QA Testing
+### Step 6: QA Testing
 
 Use the Agent tool with `subagent_type: "general-purpose"` and the qa agent prompt.
 
@@ -87,10 +106,13 @@ Prompt the agent:
 ```
 You are the QA agent. Follow the instructions in the qa agent definition.
 
-The acceptance criteria from the Planner:
+Here is the Test Plan you must implement and validate against:
+[Insert test planner output]
+
+The acceptance criteria from the Planner (for reference):
 [Insert planner output]
 
-Write tests and run them. Verify the implementation meets all acceptance criteria. Also run any existing tests to check for regressions.
+Implement every test defined in the Test Plan. Run them all. Every test in the plan must pass for this to be considered complete. Also run any existing tests to check for regressions.
 ```
 
 **If QA returns FAIL:**
@@ -99,7 +121,7 @@ Write tests and run them. Verify the implementation meets all acceptance criteri
 - Run QA again.
 - Repeat until PASS (max 3 cycles, then ask the user).
 
-### Step 6: Summary
+### Step 7: Summary
 
 After all steps pass, output a summary to the user:
 
