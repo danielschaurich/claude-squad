@@ -1,47 +1,65 @@
 # claude-squad
 
-A Claude Code plugin that orchestrates an AI development squad for full-stack feature development.
+A Claude Code plugin that orchestrates an AI development squad across 5 phases with documentation-driven development.
+
+## Core Principle
+
+**Every technical decision is verified against the current documentation of the project's stack via context7 MCP.** No assumptions from training data — only what the official docs confirm for the installed versions.
 
 ## Agents
 
-| Agent | Role |
-|-------|------|
-| **Planner** | Reads docs (context7), breaks tasks into subtasks with acceptance criteria |
-| **Architect** | Defines file structure, types, patterns, and implementation order |
-| **Dev** | Implements code following the architect's plan |
-| **Reviewer** | Reviews for correctness, security, and **simplicity** |
-| **QA** | Writes and runs tests, validates acceptance criteria |
+| Agent | Role | Uses context7 |
+|-------|------|:---:|
+| **PM** | Translates user pain into User Stories + acceptance criteria, validates via UAT | — |
+| **Planner** | Validates feasibility against documented APIs, produces requirements | Yes |
+| **Architect** | Designs technical solution backed by doc references | Yes |
+| **Test Planner** | Defines test strategy using documented test framework APIs | Yes |
+| **Dev** | Implements code with verified API calls + unit tests | Yes |
+| **Reviewer** | Reviews correctness, simplicity, security, and doc compliance | Yes |
+| **QA** | Implements and runs all tests from the Test Plan | Yes |
+| **Release** | Prepares deploy checklist, rollback plan, CI/CD validation | Yes |
 
-## Flow
+## 5-Phase Flow
 
 ```
 /claude-squad:squad "build a login page"
 
-  Planner  → researches docs, creates task breakdown
-  Architect → defines structure, types, patterns
-  Dev       → implements the code
-  Reviewer  → reviews (with simplicity checklist)
-     ↳ CHANGES REQUESTED → Dev fixes → Reviewer again (max 3x)
-  QA        → writes & runs tests
-     ↳ FAIL → Dev fixes → Reviewer → QA again (max 3x)
-  Summary   → reports what was built
+Phase 1: Discovery
+  PM        → User Story + acceptance criteria
+  Planner   → Feasibility check against docs, requirements doc
+  ↳ Gate: User confirms requirements
+
+Phase 2: Blueprint
+  Architect    → Technical design (doc-validated)
+  Test Planner → Test strategy (doc-validated)
+  ↳ Gate: User confirms architecture + test plan
+
+Phase 3: Build
+  Dev       → Implements code + unit tests (APIs verified via docs)
+  Reviewer  → Code review + simplicity checklist + doc compliance
+     ↳ CHANGES REQUESTED → Dev fixes → Reviewer (max 3x)
+  QA        → Implements + runs test plan
+     ↳ FAIL → Dev fixes → Reviewer → QA (max 3x)
+
+Phase 4: Quality
+  QA        → E2E + regression tests
+  Reviewer  → Performance + security validation (doc-based)
+  PM        → UAT against original acceptance criteria
+     ↳ REJECTED → Dev fixes → re-validate (max 2x)
+
+Phase 5: Release
+  Release   → Deploy checklist, rollback plan, CI/CD validation
+  Summary   → Full report across all phases
 ```
 
 ## Install
 
-**Step 1:** Add the marketplace:
 ```
 /plugin marketplace add danielschaurich/claude-squad
-```
-
-**Step 2:** Install the plugin:
-```
 /plugin install claude-squad@danielschaurich-plugins
 ```
 
 ## Usage
-
-Once installed, run in any project:
 
 ```
 /claude-squad:squad build user authentication with email and password
@@ -50,4 +68,4 @@ Once installed, run in any project:
 ## Requirements
 
 - [Claude Code](https://claude.ai/claude-code) CLI
-- [context7 MCP server](https://github.com/upstash/context7) configured (for the Planner to fetch docs)
+- [context7 MCP server](https://github.com/upstash/context7) configured
