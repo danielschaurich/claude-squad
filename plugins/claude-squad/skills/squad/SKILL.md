@@ -1,15 +1,22 @@
 ---
 name: squad
-description: Run a full 5-phase squad workflow (Discovery → Blueprint → Build → Quality → Release) with documentation-driven development via context7.
+description: Run the full 5-phase squad workflow (Discovery → Blueprint → Build → Quality → Release) end-to-end with documentation-driven development via context7.
 ---
 
-# /squad — Development Squad Orchestrator
+# /squad — Full Development Squad
 
-Run a full development squad workflow across 5 phases. **Every technical decision is grounded in the current documentation of the project's stack via context7 MCP.**
+Run all 5 phases end-to-end in a single command. This is equivalent to running `/discovery` → `/implement` → Release, but without stopping for user confirmation between phases.
+
+**Every technical decision is grounded in the current documentation of the project's stack via context7 MCP.**
+
+> **Prefer the modular commands when you want control:**
+> - `/discovery` — Run phases 1-2 only (Discovery + Blueprint). Review the plan before building.
+> - `/implement` — Run phases 3-4 only (Build + Quality). Requires `/discovery` output as context.
+> - `/squad` — Run everything (phases 1-5) including Release preparation.
 
 ## Core Principle: Documentation-Driven Development
 
-Every agent in this squad MUST consult the current documentation for the libraries and frameworks in use before making decisions or writing code. No assumptions based on prior knowledge — only what the docs confirm for the installed versions.
+Every agent MUST consult the current documentation for the libraries and frameworks in use before making decisions or writing code. No assumptions from training data — only what the docs confirm for the installed versions.
 
 This is enforced at every phase:
 - **Discovery:** Planner verifies feasibility against documented APIs
@@ -112,8 +119,6 @@ Define the complete test plan — every PM acceptance criterion must map to at l
 ```
 
 Wait for Test Planner output before proceeding.
-
-**Gate:** Present the Blueprint (Architecture + Test Plan) to the user. Ask for confirmation before entering Build phase. This is the "execution plan the team agrees on."
 
 ---
 
@@ -289,12 +294,12 @@ Produce the complete Release Plan: changes inventory, CI/CD validation, deploy c
 
 ---
 
-## Phase Summary
+## Final Summary
 
-After all phases complete, output the final summary to the user:
+After all phases complete, output:
 
 ```
-## Squad Complete ✓
+## Squad Complete
 
 ### Phase 1: Discovery
 - User Story: [title]
