@@ -29,7 +29,9 @@ This is enforced at every phase:
 
 ## Phase 1: Discovery
 
-**Goal:** Understand the problem, validate feasibility, produce clear requirements.
+**Goal:** Understand the problem through conversation with the user. Challenge assumptions, explore alternatives, and only proceed when everyone agrees on what to build.
+
+**CRITICAL: This phase is INTERACTIVE. Agents produce questions and concerns. You (the orchestrator) present them to the user and wait for answers. Do NOT skip the conversation.**
 
 ### Step 1.0: Check for UI Mockups
 
@@ -40,7 +42,7 @@ Glob pattern: **/*.pen
 
 If `.pen` files are found, note their paths — agents will use pencil MCP tools (`batch_get`, `get_screenshot`) to review them during their respective phases. These mockups are the source of truth for UI/UX decisions. **Never use Read or Grep on .pen files — only pencil MCP tools can read their contents.**
 
-### Step 1.1: PM — Brainstorm & Define User Story
+### Step 1.1: PM — First Pass Analysis (NOT the final story)
 
 Use the Agent tool with `subagent_type: "claude-squad:pm"`.
 
@@ -54,19 +56,22 @@ User request: {{input}}
 The project has UI mockups in these .pen files: [list paths]. Use the pencil MCP tools (batch_get) to review them — they contain design references for this feature. Never use Read or Grep on .pen files.
 {{END IF}}
 
-IMPORTANT: Do NOT jump straight to writing the User Story. Follow your brainstorming process first:
-1. Question the request — what's the real pain? What assumptions are embedded?
-2. Explore who's affected and their different contexts
-3. Consider 2-3 alternative ways to frame or solve this problem
-4. Identify what could go wrong or what's missing
-5. If mockups exist, analyze what they reveal about the user's vision
+DO NOT produce a final User Story yet. Instead:
+1. Restate the problem in your own words to check understanding.
+2. Be skeptical — challenge assumptions, question scope, propose alternatives.
+3. Brainstorm broadly: question the request, explore who's affected, consider alternatives, identify what could go wrong.
+4. If mockups exist, analyze what they reveal about the user's vision.
+5. Produce a DRAFT User Story with questions and concerns.
+6. You MUST include at least 3 questions for the user in your "Questions for the User" section.
 
-THEN write the User Story with acceptance criteria, informed by your brainstorm.
-
-Output BOTH the brainstorm thinking AND the final User Story.
+This is a first pass. The user will answer your questions before you finalize anything.
 ```
 
-Wait for PM output before proceeding.
+**INTERACTION LOOP (MANDATORY):**
+1. Present the PM's analysis to the user — show their understanding, concerns, alternatives, and questions.
+2. **Ask the user to answer the PM's questions.** Do NOT proceed until the user responds.
+3. If the user's answers raise new questions or change scope, run the PM agent again with the new context to produce the final User Story.
+4. Repeat until the PM has no more blocking questions and the user confirms the User Story.
 
 ### Step 1.2: Planner — Technical Discovery & Feasibility
 
@@ -76,26 +81,44 @@ Prompt the agent:
 ```
 You are the Planner agent. Follow the instructions in the planner agent definition.
 
-Here is the PM's User Story:
+Here is the PM's User Story (confirmed by the user):
 [Insert PM output]
+
+Here are the user's answers to PM questions:
+[Insert user's answers from the conversation]
 
 MANDATORY FIRST STEPS:
 1. Read the project's dependency files (package.json, requirements.txt, etc.) to identify the exact stack and versions.
 2. For each relevant library/framework, use resolve-library-id then query-docs via context7 to fetch current documentation.
 3. Validate every PM acceptance criterion against the documented capabilities of the current stack.
 
-Then produce the full requirements document with feasibility assessment, subtasks, and risks.
+DO NOT just validate and move on. Be skeptical:
+- Challenge the PM's scope if it's too big.
+- Propose simpler alternatives if they exist.
+- Flag hidden complexity honestly.
+- Surface tradeoffs the user needs to decide on.
+- You MUST include at least 2 items in your "Questions & Tradeoffs for the User" section.
+
+Then produce the requirements document with feasibility assessment, subtasks, and risks.
 ```
 
-Wait for Planner output before proceeding.
+**INTERACTION LOOP (MANDATORY):**
+1. Present the Planner's feasibility assessment to the user — show concerns, tradeoffs, and questions.
+2. **Ask the user to answer the Planner's questions and confirm tradeoff decisions.** Do NOT proceed until the user responds.
+3. If answers change the scope or requirements, update the PM's User Story accordingly and re-run the Planner if needed.
 
-**Gate:** If the Planner flags any acceptance criteria as infeasible, present the findings to the user and ask how to proceed before continuing.
+**Gate:** Requirements are only confirmed when:
+- All PM questions are answered
+- All Planner questions and tradeoffs are resolved
+- The user explicitly confirms the requirements
 
 ---
 
 ## Phase 2: Blueprint
 
-**Goal:** Design the technical solution and test strategy — validated against docs, agreed by the squad.
+**Goal:** Design the technical solution and test strategy — validated against docs, discussed with the user, agreed by all.
+
+**CRITICAL: This phase is INTERACTIVE. The Architect must present design options and tradeoffs, not just a final answer. The user decides on key design questions.**
 
 ### Step 2.1: Architect — Brainstorm & Technical Design
 
@@ -105,15 +128,18 @@ Prompt the agent:
 ```
 You are the Architect agent. Follow the instructions in the architect agent definition.
 
-Here is the PM's User Story (including their brainstorm):
+Here is the PM's User Story (confirmed by the user):
 [Insert PM output]
 
-Here is the Planner's requirements document:
+Here is the Planner's requirements document (confirmed by the user):
 [Insert planner output]
+
+Here are the user's answers and decisions from Discovery:
+[Insert relevant user answers/decisions]
 
 MANDATORY: For every library/framework you reference, use resolve-library-id then query-docs via context7 to verify the APIs exist in the installed version.
 
-IMPORTANT: Do NOT jump straight to a design. Follow your brainstorming process first:
+IMPORTANT: Do NOT jump straight to a final design. Follow your brainstorming process first:
 1. Research the current APIs — discover what's possible, not just what you already know
 2. Study the existing codebase patterns
 3. Generate at least 2-3 different approaches with trade-offs for each
@@ -121,16 +147,23 @@ IMPORTANT: Do NOT jump straight to a design. Follow your brainstorming process f
 5. Consider the "do less" option — could a simpler solution work?
 6. If mockups exist, analyze how they influence component structure
 
-THEN pick the best approach (with reasoning) and produce the full architecture.
+DO NOT just present a final design. You must:
+- Present multiple approaches for key decisions with pros/cons.
+- Challenge complexity — propose simpler alternatives where possible.
+- Flag risks and assumptions the user should confirm.
+- You MUST include at least 2 items in your "Design Questions for the User" section.
 
-Output BOTH the brainstorm exploration AND the final architecture design.
+Output BOTH the brainstorm exploration AND the architecture design with questions.
 ```
 
-Wait for Architect output before proceeding.
+**INTERACTION LOOP (MANDATORY):**
+1. Present the Architect's design to the user — highlight key design decisions, alternatives considered, and questions.
+2. **Ask the user to answer the Architect's design questions and confirm key decisions.** Do NOT proceed until the user responds.
+3. If answers change the design significantly, re-run the Architect with updated context.
 
 ### Step 2.2: Test Planner — Test Strategy
 
-Use the Agent tool with `subagent_type: "claude-squad:planner"`.
+Use the Agent tool with `subagent_type: "claude-squad:test-planner"`.
 
 Prompt the agent:
 ```
@@ -142,7 +175,7 @@ Here is the PM's User Story (acceptance criteria to map):
 Here is the Planner's requirements:
 [Insert planner output]
 
-Here is the Architect's design:
+Here is the Architect's design (confirmed by the user):
 [Insert architect output]
 
 MANDATORY: Read the project's test configuration. Use resolve-library-id then query-docs via context7 for every testing framework and utility. Only use documented test APIs.
@@ -151,6 +184,12 @@ Define the complete test plan — every PM acceptance criterion must map to at l
 ```
 
 Wait for Test Planner output before proceeding.
+
+**Gate:** Present the Blueprint (Architecture + Test Plan) to the user. Specifically:
+1. Summarize the key design decisions the Architect made (and which the user confirmed).
+2. Show the test strategy overview.
+3. Ask: "Are you happy with this plan? Anything you'd change before we start building?"
+4. Do NOT enter Build phase until the user explicitly confirms.
 
 ---
 
