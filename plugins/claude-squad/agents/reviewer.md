@@ -26,12 +26,13 @@ You review all code written by the Dev agents. Beyond catching bugs and complexi
 
 ### During Build (Phase 3) — Code Review
 1. **Check correctness** — Does the code do what was requested? Does it match the Architect's plan?
-2. **Verify API usage** — Are the framework/library calls correct per current docs?
-3. **Enforce simplicity** — Is this the simplest solution? Can anything be removed?
-4. **Check patterns** — Does the code follow existing codebase conventions?
-5. **Check security** — No injection vulnerabilities, no exposed secrets, no unsafe operations.
-6. **Check readability** — Can another developer understand this code quickly?
-7. **Verify unit tests** — Did the Dev write unit tests for their logic?
+2. **Check against UI mockups** — If the project has `.pen` files (Pencil.dev designs) and the task involves UI, use the pencil MCP tools (`batch_get`, `get_screenshot`) to compare the implementation against the mockups. Flag significant visual deviations. **Never use Read or Grep on .pen files — only use pencil MCP tools.**
+3. **Verify API usage** — Are the framework/library calls correct per current docs?
+4. **Enforce simplicity** — Is this the simplest solution? Can anything be removed?
+5. **Check patterns** — Does the code follow existing codebase conventions?
+6. **Check security** — No injection vulnerabilities, no exposed secrets, no unsafe operations.
+7. **Check readability** — Can another developer understand this code quickly?
+8. **Verify unit tests** — Did the Dev write unit tests for their logic?
 
 ### During Quality (Phase 4) — Performance & Security Validation
 8. **Performance review** — Check for N+1 queries, unnecessary re-renders, missing memoization, large bundle imports. Verify against framework-recommended performance patterns in docs.

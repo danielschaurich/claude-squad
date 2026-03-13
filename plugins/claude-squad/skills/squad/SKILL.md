@@ -31,9 +31,18 @@ This is enforced at every phase:
 
 **Goal:** Understand the problem, validate feasibility, produce clear requirements.
 
-### Step 1.1: PM — Define User Story
+### Step 1.0: Check for UI Mockups
 
-Use the Agent tool with `subagent_type: "claude-squad:planner"`.
+Before starting Discovery, search the project for `.pen` files (Pencil.dev designs):
+```
+Glob pattern: **/*.pen
+```
+
+If `.pen` files are found, note their paths — agents will use pencil MCP tools (`batch_get`, `get_screenshot`) to review them during their respective phases. These mockups are the source of truth for UI/UX decisions. **Never use Read or Grep on .pen files — only pencil MCP tools can read their contents.**
+
+### Step 1.1: PM — Brainstorm & Define User Story
+
+Use the Agent tool with `subagent_type: "claude-squad:pm"`.
 
 Prompt the agent:
 ```
@@ -41,7 +50,20 @@ You are the PM agent. Follow the instructions in the PM agent definition.
 
 User request: {{input}}
 
-Translate this into a clear User Story with measurable acceptance criteria. Focus on the PROBLEM, not the solution. Define what "done" looks like.
+{{IF .pen files found}}
+The project has UI mockups in these .pen files: [list paths]. Use the pencil MCP tools (batch_get) to review them — they contain design references for this feature. Never use Read or Grep on .pen files.
+{{END IF}}
+
+IMPORTANT: Do NOT jump straight to writing the User Story. Follow your brainstorming process first:
+1. Question the request — what's the real pain? What assumptions are embedded?
+2. Explore who's affected and their different contexts
+3. Consider 2-3 alternative ways to frame or solve this problem
+4. Identify what could go wrong or what's missing
+5. If mockups exist, analyze what they reveal about the user's vision
+
+THEN write the User Story with acceptance criteria, informed by your brainstorm.
+
+Output BOTH the brainstorm thinking AND the final User Story.
 ```
 
 Wait for PM output before proceeding.
@@ -75,7 +97,7 @@ Wait for Planner output before proceeding.
 
 **Goal:** Design the technical solution and test strategy — validated against docs, agreed by the squad.
 
-### Step 2.1: Architect — Technical Design
+### Step 2.1: Architect — Brainstorm & Technical Design
 
 Use the Agent tool with `subagent_type: "claude-squad:architect"`.
 
@@ -83,15 +105,25 @@ Prompt the agent:
 ```
 You are the Architect agent. Follow the instructions in the architect agent definition.
 
-Here is the PM's User Story:
+Here is the PM's User Story (including their brainstorm):
 [Insert PM output]
 
 Here is the Planner's requirements document:
 [Insert planner output]
 
-MANDATORY: For every library/framework you reference in your design, use resolve-library-id then query-docs via context7 to verify the APIs exist in the installed version. Include doc references for every technical decision.
+MANDATORY: For every library/framework you reference, use resolve-library-id then query-docs via context7 to verify the APIs exist in the installed version.
 
-Design the architecture: file structure, types, patterns, implementation order. Every pattern must be backed by documentation.
+IMPORTANT: Do NOT jump straight to a design. Follow your brainstorming process first:
+1. Research the current APIs — discover what's possible, not just what you already know
+2. Study the existing codebase patterns
+3. Generate at least 2-3 different approaches with trade-offs for each
+4. Challenge your assumptions — what are you taking for granted?
+5. Consider the "do less" option — could a simpler solution work?
+6. If mockups exist, analyze how they influence component structure
+
+THEN pick the best approach (with reasoning) and produce the full architecture.
+
+Output BOTH the brainstorm exploration AND the final architecture design.
 ```
 
 Wait for Architect output before proceeding.

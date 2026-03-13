@@ -20,8 +20,11 @@ This skill requires the following context (produced by `/discovery`):
 - **Planner output** — Requirements and subtasks
 - **Architect output** — File structure, types, patterns, implementation order
 - **Test Planner output** — Test plan with all test cases
+- **UI mockups** — Any `.pen` file paths identified during Discovery (if applicable)
 
 If this context is available from a previous `/discovery` run in the same conversation, use it directly. If not, ask the user to provide or paste the Discovery & Blueprint Document.
+
+If the Discovery document references `.pen` files, pass their paths to Dev and Reviewer agents so they can reference the mockups using pencil MCP tools. **Never use Read or Grep on .pen files — only pencil MCP tools can read their contents.**
 
 ---
 

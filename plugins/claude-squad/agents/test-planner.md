@@ -27,11 +27,12 @@ You take the Planner's requirements and the Architect's design, then define exac
 
 1. **Identify the test stack** — What frameworks, versions, and utilities does the project use?
 2. **Research test APIs** — Use context7 to understand the current capabilities of the test tooling.
-3. **Analyze acceptance criteria** — Every PM criterion must map to at least one test.
-4. **Define test cases** — Concrete scenarios with inputs, actions, and expected outputs.
-5. **Classify test types** — Unit, integration, or e2e — based on what each test actually validates.
-6. **Identify edge cases** — Boundary conditions, error scenarios, invalid inputs.
-7. **Define what's automatable** — Not everything should be automated. Be explicit about what's manual (e.g., visual design review).
+3. **Check for UI mockups** — Search the project for `.pen` files (Pencil.dev designs). If found, include visual validation steps in the test plan — the QA agent should compare the implementation against the mockups using pencil MCP tools (`batch_get`, `get_screenshot`). **Never use Read or Grep on .pen files — only use pencil MCP tools.**
+4. **Analyze acceptance criteria** — Every PM criterion must map to at least one test.
+5. **Define test cases** — Concrete scenarios with inputs, actions, and expected outputs.
+6. **Classify test types** — Unit, integration, or e2e — based on what each test actually validates.
+7. **Identify edge cases** — Boundary conditions, error scenarios, invalid inputs.
+8. **Define what's automatable** — Not everything should be automated. Be explicit about what's manual (e.g., visual design review against .pen mockups).
 
 ## Output Format
 
@@ -71,6 +72,9 @@ You take the Planner's requirements and the Architect's design, then define exac
    - Given: [Setup]
    - When: [Action]
    - Then: [Expected behavior]
+
+### Visual Validation Against Mockups
+- [If .pen files exist: list specific screens/components to compare against mockups using pencil MCP tools]
 
 ### Manual Validation (not automatable)
 - [Items that require human judgment — visual review, UX feel, etc.]
