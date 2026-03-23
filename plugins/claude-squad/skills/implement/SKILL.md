@@ -1,13 +1,13 @@
 ---
 name: implement
-description: Build & Validation phase — Dev implements code, Reviewer ensures quality, QA validates tests. Expects PRD + Design Document as input.
+description: Build & Validation phase — Frontend and Backend Devs implement, Tech Lead reviews code, QA tests, PM validates acceptance criteria.
 ---
 
 # /implement — Build & Validation
 
 Run the Build and Validation phases: implement the code, review it, test it, and validate quality. **All technical decisions grounded in current stack docs via context7.**
 
-This command expects the **PRD** (from `/prd`) and **Design Document** (from `/design`) as context. If not provided, it will ask the user for: the architecture plan, test plan, and acceptance criteria.
+This command expects the **PRD** (from `/prd`) and **Design Document** (from `/design`) as context. If not provided, it will ask the user for: the architecture plan, API contracts, component specs, and acceptance criteria.
 
 ## Core Principle: Documentation-Driven Development
 
@@ -17,11 +17,13 @@ Every agent MUST consult the current documentation for the libraries and framewo
 
 ## Agent Team
 
-| Agent | Role |
-|-------|------|
-| **Dev** | Implements code following the Architect's plan, writes unit tests |
-| **Reviewer** | Reviews correctness, simplicity, security, doc compliance, performance |
-| **QA** | Implements and runs all tests from the Test Plan, validates acceptance criteria |
+| Agent | Role in this phase |
+|-------|-------------------|
+| **Frontend Dev** | Implements UI components, pages, interactions from Designer specs |
+| **Backend Dev** | Implements APIs, data models, business logic from API contracts |
+| **Tech Lead** | Reviews all code for correctness, simplicity, security, performance |
+| **QA** | Defines test plan, implements and runs all tests, validates acceptance criteria |
+| **PM** | UAT — validates the result against the original User Story |
 
 ---
 
@@ -29,86 +31,146 @@ Every agent MUST consult the current documentation for the libraries and framewo
 
 This skill requires the following context (produced by `/prd` + `/design`):
 - **PM output** — User Story and acceptance criteria
-- **Planner output** — Requirements and subtasks
-- **Architect output** — File structure, types, patterns, implementation order
-- **Test Planner output** — Test plan with all test cases
-- **UI mockups** — Any `.pen` file paths identified during Design (if applicable)
+- **Tech Lead output** — Requirements and subtasks
+- **Designer output** — Component specs, interaction flows, states
+- **Frontend Dev output** — Frontend feasibility notes
+- **Backend Dev output** — API contracts, backend feasibility notes
+- **UI mockups** — Any `.pen` file paths (if applicable)
 
 If this context is available from previous `/prd` and `/design` runs in the same conversation, use it directly. If not, ask the user to provide or paste the PRD and Design Document.
-
-If the Design Document references `.pen` files, pass their paths to Dev and Reviewer agents so they can reference the mockups using pencil MCP tools. **Never use Read or Grep on .pen files — only pencil MCP tools can read their contents.**
 
 ---
 
 ## Phase 1: Build
 
-**Goal:** Implement and review code with continuous testing.
+**Goal:** Implement frontend and backend in parallel, review code, test continuously.
 
-### Step 1.1: Dev — Implementation
-
-Use the Agent tool with `subagent_type: "claude-squad:dev"`.
-
-If the Architect defined independent subtasks, you MAY run multiple Dev agents in parallel (one per subtask). Otherwise, use a single Dev agent.
-
-Prompt the agent:
-```
-You are the Dev agent. Follow the instructions in the dev agent definition.
-
-Here is the Architect's plan:
-[Insert architect output]
-
-Here is the Test Plan (you must write unit tests for your code):
-[Insert test planner output]
-
-MANDATORY: Before using any library/framework API, use resolve-library-id then query-docs via context7 to verify the exact function signature, parameters, and return type. Do NOT assume APIs exist — verify them.
-
-Implement the code following the Architect's plan. Write unit tests for every piece of logic. Code without tests is not done.
-```
-
-Wait for all Dev agents to complete before proceeding.
-
-### Step 1.2: Reviewer — Code Review
-
-Use the Agent tool with `subagent_type: "claude-squad:reviewer"`.
-
-Prompt the agent:
-```
-You are the Reviewer agent. Follow the instructions in the reviewer agent definition (Code Review mode — Phase 3).
-
-Review all code changes made by the Dev agent(s). Check the git diff to see what was changed.
-
-The Architect's plan was:
-[Insert architect output]
-
-MANDATORY: For any framework/library API usage that looks non-standard or unfamiliar, use resolve-library-id then query-docs via context7 to verify correctness. Flag any deprecated or non-existent API usage.
-
-Focus on: correctness, simplicity, documentation compliance, and unit test coverage.
-```
-
-**If CHANGES REQUESTED:**
-- Run a Dev agent to fix the issues (with the same context7 mandate).
-- Run the Reviewer again.
-- Repeat until APPROVED (max 3 cycles, then ask the user).
-
-### Step 1.3: QA — Continuous Testing
+### Step 1.1: QA — Test Plan
 
 Use the Agent tool with `subagent_type: "claude-squad:qa"`.
 
 Prompt the agent:
 ```
-You are the QA agent. Follow the instructions in the qa agent definition (Build phase — continuous testing).
+You are the QA agent. Follow the instructions in the qa agent definition (Test Planning mode).
 
-Here is the Test Plan to implement:
-[Insert test planner output]
+Here is the PM's User Story and acceptance criteria:
+[Insert PM output]
 
-MANDATORY: Use resolve-library-id then query-docs via context7 for every testing framework before writing tests. Verify all matchers, utilities, and patterns against current docs.
+Here is the Tech Lead's requirements:
+[Insert Tech Lead output]
 
-Implement every test defined in the Test Plan. Run them all. Report results.
+Here is the Designer's UI Design:
+[Insert Designer output]
+
+Here are the API Contracts:
+[Insert Backend Dev output from /design]
+
+MANDATORY: Read the project's test configuration. Use resolve-library-id then query-docs via context7 for every testing framework and utility. Only use documented test APIs.
+
+Define the complete test plan:
+- Every PM acceptance criterion must map to at least one test.
+- Include unit, integration, and e2e test cases.
+- Include edge cases and error scenarios.
+- If UI mockups exist (.pen files), include visual validation steps.
+```
+
+Wait for QA test plan before proceeding.
+
+### Step 1.2: Frontend Dev + Backend Dev — Implementation (run in parallel)
+
+Run both Dev agents in parallel.
+
+#### Frontend Dev
+
+Use the Agent tool with `subagent_type: "claude-squad:frontend-dev"`.
+
+Prompt the agent:
+```
+You are the Frontend Dev agent. Follow the instructions in the frontend-dev agent definition.
+
+Here is the Designer's UI Design (your implementation spec):
+[Insert Designer output]
+
+Here are the API Contracts (what your frontend consumes):
+[Insert Backend Dev API contracts from /design]
+
+Here is the QA Test Plan (you must write unit tests):
+[Insert QA test plan]
+
+MANDATORY: Before using any library/framework API, use resolve-library-id then query-docs via context7 to verify the exact function signature, parameters, and return type.
+
+Implement the frontend following the Designer's specs. Write unit tests for every component and piece of logic. Code without tests is not done.
+```
+
+#### Backend Dev
+
+Use the Agent tool with `subagent_type: "claude-squad:backend-dev"`.
+
+Prompt the agent:
+```
+You are the Backend Dev agent. Follow the instructions in the backend-dev agent definition.
+
+Here is the Tech Lead's requirements:
+[Insert Tech Lead output]
+
+Here are the API Contracts you defined (implement them exactly):
+[Insert Backend Dev API contracts from /design]
+
+Here is the QA Test Plan (you must write unit tests):
+[Insert QA test plan]
+
+MANDATORY: Before using any library/framework API, use resolve-library-id then query-docs via context7 to verify the exact function signature, parameters, and return type.
+
+Implement the backend following the API contracts. Write unit tests for every piece of logic. Code without tests is not done.
+```
+
+Wait for both Dev agents to complete before proceeding.
+
+### Step 1.3: Tech Lead — Code Review
+
+Use the Agent tool with `subagent_type: "claude-squad:tech-lead"`.
+
+Prompt the agent:
+```
+You are the Tech Lead agent. Follow the instructions in the tech-lead agent definition (Code Review mode).
+
+Review all code changes made by the Frontend Dev and Backend Dev. Check the git diff to see what was changed.
+
+The Designer's specs were:
+[Insert Designer output]
+
+The API Contracts were:
+[Insert Backend Dev API contracts from /design]
+
+MANDATORY: For any framework/library API usage that looks non-standard or unfamiliar, use resolve-library-id then query-docs via context7 to verify correctness.
+
+Review for: correctness, simplicity, security, performance, documentation compliance, and unit test coverage.
+```
+
+**If CHANGES REQUESTED:**
+- Run the appropriate Dev agent(s) to fix the issues.
+- Run the Tech Lead again.
+- Repeat until APPROVED (max 3 cycles, then ask the user).
+
+### Step 1.4: QA — Continuous Testing
+
+Use the Agent tool with `subagent_type: "claude-squad:qa"`.
+
+Prompt the agent:
+```
+You are the QA agent. Follow the instructions in the qa agent definition (Build — continuous testing).
+
+Here is the Test Plan you defined:
+[Insert QA test plan]
+
+MANDATORY: Use resolve-library-id then query-docs via context7 for every testing framework before writing tests.
+
+Implement every test from the test plan. Run them all. Report results.
 ```
 
 **If FAIL:**
-- Run a Dev agent to fix the failures.
-- Run the Reviewer on the fixes.
+- Run the appropriate Dev agent(s) to fix the failures.
+- Run the Tech Lead on the fixes.
 - Run QA again.
 - Repeat until PASS (max 3 cycles, then ask the user).
 
@@ -116,7 +178,7 @@ Implement every test defined in the Test Plan. Run them all. Report results.
 
 ## Phase 2: Validation
 
-**Goal:** Full validation — e2e, regression, UAT, performance, and security.
+**Goal:** Full validation — e2e, regression, acceptance criteria, performance, security, UAT.
 
 ### Step 2.1: QA — E2E & Regression
 
@@ -124,17 +186,17 @@ Use the Agent tool with `subagent_type: "claude-squad:qa"`.
 
 Prompt the agent:
 ```
-You are the QA agent. Follow the instructions in the qa agent definition (Quality phase — full validation).
+You are the QA agent. Follow the instructions in the qa agent definition (Validation — full suite).
 
 Test Plan:
-[Insert test planner output]
+[Insert QA test plan]
 
 PM Acceptance Criteria:
 [Insert PM output]
 
 MANDATORY: Verify all testing APIs via context7 before writing tests.
 
-Run the complete test suite including:
+Run the complete test suite:
 1. All tests from the Test Plan (should already pass from Build phase)
 2. E2E tests for the complete user journey
 3. Full regression suite — run ALL existing tests
@@ -143,23 +205,20 @@ Run the complete test suite including:
 Report the complete QA Report with acceptance criteria mapping.
 ```
 
-### Step 2.2: Reviewer — Performance & Security Validation
+### Step 2.2: Tech Lead — Performance & Security Review
 
-Use the Agent tool with `subagent_type: "claude-squad:reviewer"`.
+Use the Agent tool with `subagent_type: "claude-squad:tech-lead"`.
 
 Prompt the agent:
 ```
-You are the Reviewer agent. Follow the instructions in the reviewer agent definition (Performance & Security mode — Phase 4).
+You are the Tech Lead agent. Follow the instructions in the tech-lead agent definition (Code Review mode — performance & security focus).
 
 Review all code changes for performance and security.
 
 MANDATORY: Use resolve-library-id then query-docs via context7 to verify:
-- Framework-recommended performance patterns (memoization, lazy loading, query optimization)
-- Security best practices documented for the framework version in use
+- Framework-recommended performance patterns
+- Security best practices documented for the framework version
 - OWASP top 10 applicability
-
-The Architect's design was:
-[Insert architect output]
 
 Produce the Performance & Security Review report.
 ```
@@ -170,7 +229,7 @@ Use the Agent tool with `subagent_type: "claude-squad:pm"`.
 
 Prompt the agent:
 ```
-You are the PM agent. Follow the instructions in the PM agent definition (UAT mode — Phase 4).
+You are the PM agent. Follow the instructions in the PM agent definition (UAT mode).
 
 Here is the original User Story and acceptance criteria:
 [Insert PM output from PRD]
@@ -178,13 +237,13 @@ Here is the original User Story and acceptance criteria:
 Here is the QA Report:
 [Insert QA report]
 
-Here is the Performance & Security Review:
-[Insert reviewer output]
+Here is the Tech Lead's Performance & Security Review:
+[Insert Tech Lead review]
 
 Validate that what was built solves the original problem. Check every acceptance criterion against the test results. Produce the UAT Report.
 ```
 
-**Gate:** If PM returns REJECTED or Reviewer found critical issues, loop back to Dev to fix, then re-validate. Max 2 cycles, then ask the user.
+**Gate:** If PM returns REJECTED or Tech Lead found critical issues, loop back to the appropriate Dev to fix, then re-validate. Max 2 cycles, then ask the user.
 
 ---
 

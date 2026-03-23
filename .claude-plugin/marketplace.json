@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "claude-squad",
-      "description": "AI development squad — 3-step workflow (PRD → Design → Implement) with specialized agent teams and documentation-driven development via context7.",
+      "description": "AI development squad — 3-phase workflow (PRD → Design → Implement) with 6 specialized agents in cross-functional teams.",
       "version": "3.0.0",
       "source": "./plugins/claude-squad"
     }

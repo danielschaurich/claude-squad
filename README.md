@@ -1,6 +1,6 @@
 # claude-squad
 
-A Claude Code plugin that orchestrates an AI development squad across 3 steps with documentation-driven development.
+A Claude Code plugin that orchestrates an AI development squad with specialized agent teams for each phase.
 
 ## Core Principle
 
@@ -8,69 +8,63 @@ A Claude Code plugin that orchestrates an AI development squad across 3 steps wi
 
 ## Commands
 
-| Command | Step | Agent Team | Use when |
-|---------|------|------------|----------|
-| `/prd` | Framing | PM, Planner | Define the problem, validate feasibility, produce the PRD |
-| `/design` | Design & Prototype | Architect, Test Planner | Design the architecture, prototype UI (pencil MCP), define test strategy |
-| `/implement` | Build & Validation | Dev, Reviewer, QA | Implement, review, test, and validate quality |
+| Command | Phase | Agent Team |
+|---------|-------|------------|
+| `/prd` | Framing | PM, Tech Lead, Designer |
+| `/design` | Design & Prototype | Designer, PM, Frontend Dev, Backend Dev |
+| `/implement` | Build & Validation | Frontend Dev, Backend Dev, Tech Lead, QA, PM |
 
-### Modular workflow
+### Workflow
 ```
-/prd "build a login page"        → produces PRD (User Story + Requirements)
-  (review and adjust the plan)
-/design                          → produces Design Document (Architecture + Test Plan)
-  (review and adjust the design)
-/implement                       → builds, reviews, tests, validates
+/prd "build a login page"        → PRD (User Story + Requirements + UX Perspective)
+  (review and adjust)
+/design                          → Design Document (UX Flows + API Contracts + Feasibility)
+  (review and adjust)
+/implement                       → Build, Review, Test, Validate
 ```
 
-## Agent Teams
+## Agents
 
-### `/prd` — Framing
 | Agent | Role | Uses context7 |
 |-------|------|:---:|
-| **PM** | Brainstorms, challenges assumptions, defines User Story + acceptance criteria | — |
-| **Planner** | Validates feasibility against documented APIs, produces requirements | Yes |
+| **PM** | Defines the problem, User Story, acceptance criteria, UAT validation | — |
+| **Tech Lead** | Feasibility, scope, technical direction, code review, perf/security | Yes |
+| **Designer** | UX flows, prototypes (pencil MCP), component specs, interaction design | — |
+| **Frontend Dev** | Implements UI components, pages, interactions | Yes |
+| **Backend Dev** | Implements APIs, data models, business logic | Yes |
+| **QA** | Test strategy, test implementation, e2e, regression, acceptance validation | Yes |
 
-### `/design` — Design & Prototype
-| Agent | Role | Uses context7 |
-|-------|------|:---:|
-| **Architect** | Explores approaches, designs technical solution, prototypes UI via pencil MCP | Yes |
-| **Test Planner** | Defines test strategy using documented test framework APIs | Yes |
-
-### `/implement` — Build & Validation
-| Agent | Role | Uses context7 |
-|-------|------|:---:|
-| **Dev** | Implements code with verified API calls + unit tests | Yes |
-| **Reviewer** | Reviews correctness, simplicity, security, performance, and doc compliance | Yes |
-| **QA** | Implements and runs all tests from the Test Plan, validates acceptance criteria | Yes |
-
-## Workflow
+## Flow
 
 ```
 /prd ──────────────────────────────────────────────
-  PM        → Brainstorm, challenge, User Story
-  Planner   → Feasibility against docs, requirements
+  PM          → Brainstorm, challenge, User Story
+  Tech Lead   → Feasibility, scope, requirements
+  Designer    → Early UX perspective, mockup review
   ↳ Gate: User confirms PRD
 
 /design ───────────────────────────────────────────
-  Architect    → Technical design (doc-validated)
-               → UI prototype analysis (pencil MCP)
-  Test Planner → Test strategy (doc-validated)
+  Designer      → UX flows, prototypes (pencil MCP), component specs
+  PM            → Validates design against User Story
+  Frontend Dev  → Reviews frontend feasibility
+  Backend Dev   → Proposes API contracts, reviews backend feasibility
   ↳ Gate: User confirms Design
 
 /implement ────────────────────────────────────────
   Build:
-    Dev       → Implements + unit tests
-    Reviewer  → Code review + doc compliance
-       ↳ CHANGES REQUESTED → Dev → Reviewer (3x)
-    QA        → Implements + runs test plan
-       ↳ FAIL → Dev → Reviewer → QA (3x)
+    QA            → Defines test plan
+    Frontend Dev  → Implements UI (parallel)
+    Backend Dev   → Implements backend (parallel)
+    Tech Lead     → Code review
+       ↳ CHANGES REQUESTED → Devs → Tech Lead (3x)
+    QA            → Runs all tests
+       ↳ FAIL → Devs → Tech Lead → QA (3x)
 
   Validation:
-    QA        → E2E + regression
-    Reviewer  → Performance + security validation
-    PM        → UAT against acceptance criteria
-    ↳ Gate: REJECTED → Dev fixes → re-validate (2x)
+    QA            → E2E + regression
+    Tech Lead     → Performance + security review
+    PM            → UAT against acceptance criteria
+    ↳ Gate: REJECTED → Devs fix → re-validate (2x)
 ```
 
 ## Install
@@ -87,10 +81,6 @@ A Claude Code plugin that orchestrates an AI development squad across 3 steps wi
 /claude-squad:prd build user authentication with email and password
 /claude-squad:design
 /claude-squad:implement
-
-# Or jump to any step with context
-/claude-squad:design "here's what I want to build: [paste PRD]"
-/claude-squad:implement "here's the design: [paste Design Document]"
 ```
 
 ## Requirements

@@ -1,11 +1,11 @@
 ---
 name: prd
-description: Framing phase — PM brainstorms and defines the User Story, Planner validates feasibility. Output is the PRD that feeds into /design.
+description: Framing phase — PM defines the problem, Tech Lead validates feasibility, Designer provides UX perspective. Output is the PRD that feeds into /design.
 ---
 
 # /prd — Framing
 
-Run the Framing phase: understand the problem, challenge assumptions, and produce a validated PRD. **All technical feasibility grounded in current stack docs via context7.**
+Run the Framing phase: define the problem, validate feasibility, scope the work, and produce a PRD. **All technical decisions grounded in current stack docs via context7.**
 
 The output of this command is a **PRD (Product Requirements Document)** — a self-contained artifact that feeds directly into `/design`.
 
@@ -17,10 +17,11 @@ Every agent MUST consult the current documentation for the libraries and framewo
 
 ## Agent Team
 
-| Agent | Role |
-|-------|------|
-| **PM** | Brainstorms, challenges assumptions, defines User Story with acceptance criteria |
-| **Planner** | Validates feasibility against documented APIs, produces requirements with subtasks |
+| Agent | Role in this phase |
+|-------|-------------------|
+| **PM** | Brainstorms, challenges assumptions, defines User Story with acceptance criteria, success metrics |
+| **Tech Lead** | Validates feasibility against stack docs, scopes work, defines subtasks and technical direction |
+| **Designer** | Reviews mockups (pencil MCP), provides early UX perspective, flags design concerns |
 
 ---
 
@@ -31,11 +32,11 @@ Before starting, search the project for `.pen` files (Pencil.dev designs):
 Glob pattern: **/*.pen
 ```
 
-If `.pen` files are found, note their paths — agents will use pencil MCP tools (`batch_get`, `get_screenshot`) to review them. These mockups are the source of truth for UI/UX decisions. **Never use Read or Grep on .pen files — only pencil MCP tools can read their contents.**
+If `.pen` files are found, note their paths — the Designer will review them via pencil MCP tools. **Never use Read or Grep on .pen files — only pencil MCP tools can read their contents.**
 
 ---
 
-## Step 2: PM — Brainstorm & Define User Story
+## Step 2: PM — Problem Definition & User Story
 
 Use the Agent tool with `subagent_type: "claude-squad:pm"`.
 
@@ -68,13 +69,13 @@ This is a first pass. The user will answer your questions before you finalize an
 
 ---
 
-## Step 3: Planner — Technical Feasibility & Requirements
+## Step 3: Tech Lead — Feasibility & Scope
 
-Use the Agent tool with `subagent_type: "claude-squad:planner"`.
+Use the Agent tool with `subagent_type: "claude-squad:tech-lead"`.
 
 Prompt the agent:
 ```
-You are the Planner agent. Follow the instructions in the planner agent definition.
+You are the Tech Lead agent. Follow the instructions in the tech-lead agent definition (Framing mode).
 
 Here is the PM's User Story (confirmed by the user):
 [Insert PM output]
@@ -91,6 +92,7 @@ DO NOT just validate and move on. Be skeptical:
 - Challenge the PM's scope if it's too big.
 - Propose simpler alternatives if they exist.
 - Flag hidden complexity honestly.
+- Define success metrics and technical quality bars.
 - Surface tradeoffs the user needs to decide on.
 - You MUST include at least 2 items in your "Questions & Tradeoffs for the User" section.
 
@@ -98,20 +100,56 @@ Then produce the requirements document with feasibility assessment, subtasks, an
 ```
 
 **INTERACTION LOOP (MANDATORY):**
-1. Present the Planner's feasibility assessment to the user — show concerns, tradeoffs, and questions.
-2. **Ask the user to answer the Planner's questions and confirm tradeoff decisions.** Do NOT proceed until the user responds.
-3. If answers change the scope or requirements, update the PM's User Story accordingly and re-run the Planner if needed.
+1. Present the Tech Lead's feasibility assessment to the user — show concerns, tradeoffs, and questions.
+2. **Ask the user to answer the Tech Lead's questions and confirm tradeoff decisions.** Do NOT proceed until the user responds.
+3. If answers change the scope or requirements, update the PM's User Story accordingly and re-run the Tech Lead if needed.
 
-**Gate:** Requirements are only confirmed when:
+---
+
+## Step 4: Designer — Early UX Perspective
+
+Use the Agent tool with `subagent_type: "claude-squad:designer"`.
+
+Prompt the agent:
+```
+You are the Designer agent. Follow the instructions in the designer agent definition.
+
+Here is the PM's User Story:
+[Insert PM output]
+
+Here is the Tech Lead's requirements and feasibility:
+[Insert Tech Lead output]
+
+{{IF .pen files found}}
+The project has UI mockups in these .pen files: [list paths]. Use the pencil MCP tools (batch_get, get_screenshot) to review them. Never use Read or Grep on .pen files.
+{{END IF}}
+
+This is the Framing phase — you're not doing full design yet. Your job is to:
+1. Review any existing mockups and assess their completeness.
+2. Flag UX concerns early — missing states, accessibility issues, interaction gaps.
+3. Identify open design questions that should be resolved before full design begins.
+4. Provide a brief UX perspective on the PM's acceptance criteria — are they testable from a UI standpoint?
+
+Keep it concise. Full component specs and interaction flows come in /design.
+```
+
+Wait for Designer output before proceeding.
+
+---
+
+## Gate: User Confirms PRD
+
+**Requirements are only confirmed when:**
 - All PM questions are answered
-- All Planner questions and tradeoffs are resolved
-- The user explicitly confirms the requirements
+- All Tech Lead questions and tradeoffs are resolved
+- Designer UX concerns are acknowledged
+- The user explicitly confirms the PRD
 
 ---
 
 ## Output: PRD
 
-After all steps complete, compile and present the PRD to the user. **This is the artifact that feeds into `/design`.**
+After all steps complete, compile and present the PRD to the user.
 
 ```
 ## PRD: [Feature title]
@@ -119,13 +157,16 @@ After all steps complete, compile and present the PRD to the user. **This is the
 ### 1. User Story (PM)
 [Full PM output — brainstorm, User Story, acceptance criteria, out of scope]
 
-### 2. Requirements (Planner)
-[Full Planner output — stack analysis, feasibility, subtasks, risks]
+### 2. Requirements & Feasibility (Tech Lead)
+[Full Tech Lead output — stack analysis, feasibility, subtasks, success metrics, risks]
+
+### 3. UX Perspective (Designer)
+[Designer's early assessment — mockup review, UX concerns, open design questions]
 
 ### UI Mockups Referenced
-| .pen file | Screens/components reviewed | Used by |
+| .pen file | Screens/components reviewed | Notes |
 |---|---|---|
-| [path] | [What was found] | [Which agents referenced it] |
+| [path] | [What was found] | [Concerns or observations] |
 (or "No .pen files found in project")
 
 ### Stack Documentation Consulted
@@ -136,6 +177,7 @@ After all steps complete, compile and present the PRD to the user. **This is the
 ### Status
 - Feasibility: [All clear / Issues flagged]
 - Requirements: [X subtasks defined across Y acceptance criteria]
+- UX: [Concerns raised / All clear]
 ```
 
 **Ask the user:** "PRD complete. Run `/design` to start designing, or adjust the plan first."
