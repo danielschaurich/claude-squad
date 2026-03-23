@@ -1,6 +1,6 @@
 # claude-squad
 
-A Claude Code plugin that orchestrates an AI development squad across 5 phases with documentation-driven development.
+A Claude Code plugin that orchestrates an AI development squad with specialized agent teams for each phase.
 
 ## Core Principle
 
@@ -8,65 +8,63 @@ A Claude Code plugin that orchestrates an AI development squad across 5 phases w
 
 ## Commands
 
-| Command | Phases | Use when |
-|---------|--------|----------|
-| `/discovery` | 1-2 (Discovery + Blueprint) | You want to plan first, review, then build separately |
-| `/implement` | 3-4 (Build + Quality) | You have a Discovery & Blueprint Document ready |
-| `/squad` | 1-5 (All phases) | You want the full end-to-end workflow |
+| Command | Phase | Agent Team |
+|---------|-------|------------|
+| `/prd` | Framing | PM, Tech Lead, Designer |
+| `/design` | Design & Prototype | Designer, PM, Frontend Dev, Backend Dev |
+| `/implement` | Build & Validation | Frontend Dev, Backend Dev, Tech Lead, QA, PM |
 
-### Modular workflow
+### Workflow
 ```
-/discovery "build a login page"    → produces Discovery & Blueprint Document
-  (review and adjust the plan)
-/implement                         → builds, reviews, tests, validates
-```
-
-### Full workflow
-```
-/squad "build a login page"        → runs everything including Release preparation
+/prd "build a login page"        → PRD (User Story + Requirements + UX Perspective)
+  (review and adjust)
+/design                          → Design Document (UX Flows + API Contracts + Feasibility)
+  (review and adjust)
+/implement                       → Build, Review, Test, Validate
 ```
 
 ## Agents
 
 | Agent | Role | Uses context7 |
 |-------|------|:---:|
-| **PM** | Translates user pain into User Stories + acceptance criteria, validates via UAT | — |
-| **Planner** | Validates feasibility against documented APIs, produces requirements | Yes |
-| **Architect** | Designs technical solution backed by doc references | Yes |
-| **Test Planner** | Defines test strategy using documented test framework APIs | Yes |
-| **Dev** | Implements code with verified API calls + unit tests | Yes |
-| **Reviewer** | Reviews correctness, simplicity, security, and doc compliance | Yes |
-| **QA** | Implements and runs all tests from the Test Plan | Yes |
-| **Release** | Prepares deploy checklist, rollback plan, CI/CD validation | Yes |
+| **PM** | Defines the problem, User Story, acceptance criteria, UAT validation | — |
+| **Tech Lead** | Feasibility, scope, technical direction, code review, perf/security | Yes |
+| **Designer** | UX flows, prototypes (pencil MCP), component specs, interaction design | — |
+| **Frontend Dev** | Implements UI components, pages, interactions | Yes |
+| **Backend Dev** | Implements APIs, data models, business logic | Yes |
+| **QA** | Test strategy, test implementation, e2e, regression, acceptance validation | Yes |
 
-## 5-Phase Flow
+## Flow
 
 ```
-Phase 1: Discovery ─────────────────────────────┐
-  PM        → User Story + acceptance criteria   │ /discovery
-  Planner   → Feasibility against docs           │
-                                                  │
-Phase 2: Blueprint                                │
-  Architect    → Technical design (doc-validated) │
-  Test Planner → Test strategy (doc-validated)    │
-  ↳ Gate: User confirms plan                     ┘
+/prd ──────────────────────────────────────────────
+  PM          → Brainstorm, challenge, User Story
+  Tech Lead   → Feasibility, scope, requirements
+  Designer    → Early UX perspective, mockup review
+  ↳ Gate: User confirms PRD
 
-Phase 3: Build ──────────────────────────────────┐
-  Dev       → Implements + unit tests             │ /implement
-  Reviewer  → Code review + doc compliance        │
-     ↳ CHANGES REQUESTED → Dev → Reviewer (3x)   │
-  QA        → Implements + runs test plan         │
-     ↳ FAIL → Dev → Reviewer → QA (3x)           │
-                                                  │
-Phase 4: Quality                                  │
-  QA        → E2E + regression                    │
-  Reviewer  → Performance + security validation   │
-  PM        → UAT against acceptance criteria     │
-  ↳ Gate: REJECTED → Dev fixes → re-validate (2x)┘
+/design ───────────────────────────────────────────
+  Designer      → UX flows, prototypes (pencil MCP), component specs
+  PM            → Validates design against User Story
+  Frontend Dev  → Reviews frontend feasibility
+  Backend Dev   → Proposes API contracts, reviews backend feasibility
+  ↳ Gate: User confirms Design
 
-Phase 5: Release ────────────────────────────────── /squad only
-  Release   → Deploy checklist, rollback plan
-  Summary   → Full report across all phases
+/implement ────────────────────────────────────────
+  Build:
+    QA            → Defines test plan
+    Frontend Dev  → Implements UI (parallel)
+    Backend Dev   → Implements backend (parallel)
+    Tech Lead     → Code review
+       ↳ CHANGES REQUESTED → Devs → Tech Lead (3x)
+    QA            → Runs all tests
+       ↳ FAIL → Devs → Tech Lead → QA (3x)
+
+  Validation:
+    QA            → E2E + regression
+    Tech Lead     → Performance + security review
+    PM            → UAT against acceptance criteria
+    ↳ Gate: REJECTED → Devs fix → re-validate (2x)
 ```
 
 ## Install
@@ -79,15 +77,14 @@ Phase 5: Release ─────────────────────
 ## Usage
 
 ```bash
-# Plan first, build later
-/claude-squad:discovery build user authentication with email and password
+# Step by step
+/claude-squad:prd build user authentication with email and password
+/claude-squad:design
 /claude-squad:implement
-
-# Or run everything at once
-/claude-squad:squad build user authentication with email and password
 ```
 
 ## Requirements
 
 - [Claude Code](https://claude.ai/claude-code) CLI
 - [context7 MCP server](https://github.com/upstash/context7) configured
+- [pencil MCP server](https://pencil.dev) configured (for UI prototyping with .pen files)

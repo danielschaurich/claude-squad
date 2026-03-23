@@ -1,7 +1,7 @@
 {
   "name": "claude-squad",
-  "description": "AI development squad plugin — orchestrates PM, Planner, Architect, Dev, Reviewer, QA, and Release agents across 5 phases (Discovery → Blueprint → Build → Quality → Release) with documentation-driven development via context7.",
-  "version": "2.0.0",
+  "description": "AI development squad plugin — orchestrates PM, Tech Lead, Designer, Frontend Dev, Backend Dev, and QA agents across 3 phases (PRD → Design → Implement).",
+  "version": "3.0.0",
   "author": {
     "name": "danielschaurich"
   }
