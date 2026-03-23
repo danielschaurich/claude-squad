@@ -1,6 +1,6 @@
 # claude-squad
 
-A Claude Code plugin that orchestrates an AI development squad across 5 phases with documentation-driven development.
+A Claude Code plugin that orchestrates an AI development squad across 3 steps with documentation-driven development.
 
 ## Core Principle
 
@@ -8,65 +8,69 @@ A Claude Code plugin that orchestrates an AI development squad across 5 phases w
 
 ## Commands
 
-| Command | Phases | Use when |
-|---------|--------|----------|
-| `/discovery` | 1-2 (Discovery + Blueprint) | You want to plan first, review, then build separately |
-| `/implement` | 3-4 (Build + Quality) | You have a Discovery & Blueprint Document ready |
-| `/squad` | 1-5 (All phases) | You want the full end-to-end workflow |
+| Command | Step | Agent Team | Use when |
+|---------|------|------------|----------|
+| `/prd` | Framing | PM, Planner | Define the problem, validate feasibility, produce the PRD |
+| `/design` | Design & Prototype | Architect, Test Planner | Design the architecture, prototype UI (pencil MCP), define test strategy |
+| `/implement` | Build & Validation | Dev, Reviewer, QA | Implement, review, test, and validate quality |
 
 ### Modular workflow
 ```
-/discovery "build a login page"    → produces Discovery & Blueprint Document
+/prd "build a login page"        → produces PRD (User Story + Requirements)
   (review and adjust the plan)
-/implement                         → builds, reviews, tests, validates
+/design                          → produces Design Document (Architecture + Test Plan)
+  (review and adjust the design)
+/implement                       → builds, reviews, tests, validates
 ```
 
-### Full workflow
-```
-/squad "build a login page"        → runs everything including Release preparation
-```
+## Agent Teams
 
-## Agents
-
+### `/prd` — Framing
 | Agent | Role | Uses context7 |
 |-------|------|:---:|
-| **PM** | Translates user pain into User Stories + acceptance criteria, validates via UAT | — |
+| **PM** | Brainstorms, challenges assumptions, defines User Story + acceptance criteria | — |
 | **Planner** | Validates feasibility against documented APIs, produces requirements | Yes |
-| **Architect** | Designs technical solution backed by doc references | Yes |
-| **Test Planner** | Defines test strategy using documented test framework APIs | Yes |
-| **Dev** | Implements code with verified API calls + unit tests | Yes |
-| **Reviewer** | Reviews correctness, simplicity, security, and doc compliance | Yes |
-| **QA** | Implements and runs all tests from the Test Plan | Yes |
-| **Release** | Prepares deploy checklist, rollback plan, CI/CD validation | Yes |
 
-## 5-Phase Flow
+### `/design` — Design & Prototype
+| Agent | Role | Uses context7 |
+|-------|------|:---:|
+| **Architect** | Explores approaches, designs technical solution, prototypes UI via pencil MCP | Yes |
+| **Test Planner** | Defines test strategy using documented test framework APIs | Yes |
+
+### `/implement` — Build & Validation
+| Agent | Role | Uses context7 |
+|-------|------|:---:|
+| **Dev** | Implements code with verified API calls + unit tests | Yes |
+| **Reviewer** | Reviews correctness, simplicity, security, performance, and doc compliance | Yes |
+| **QA** | Implements and runs all tests from the Test Plan, validates acceptance criteria | Yes |
+
+## Workflow
 
 ```
-Phase 1: Discovery ─────────────────────────────┐
-  PM        → User Story + acceptance criteria   │ /discovery
-  Planner   → Feasibility against docs           │
-                                                  │
-Phase 2: Blueprint                                │
-  Architect    → Technical design (doc-validated) │
-  Test Planner → Test strategy (doc-validated)    │
-  ↳ Gate: User confirms plan                     ┘
+/prd ──────────────────────────────────────────────
+  PM        → Brainstorm, challenge, User Story
+  Planner   → Feasibility against docs, requirements
+  ↳ Gate: User confirms PRD
 
-Phase 3: Build ──────────────────────────────────┐
-  Dev       → Implements + unit tests             │ /implement
-  Reviewer  → Code review + doc compliance        │
-     ↳ CHANGES REQUESTED → Dev → Reviewer (3x)   │
-  QA        → Implements + runs test plan         │
-     ↳ FAIL → Dev → Reviewer → QA (3x)           │
-                                                  │
-Phase 4: Quality                                  │
-  QA        → E2E + regression                    │
-  Reviewer  → Performance + security validation   │
-  PM        → UAT against acceptance criteria     │
-  ↳ Gate: REJECTED → Dev fixes → re-validate (2x)┘
+/design ───────────────────────────────────────────
+  Architect    → Technical design (doc-validated)
+               → UI prototype analysis (pencil MCP)
+  Test Planner → Test strategy (doc-validated)
+  ↳ Gate: User confirms Design
 
-Phase 5: Release ────────────────────────────────── /squad only
-  Release   → Deploy checklist, rollback plan
-  Summary   → Full report across all phases
+/implement ────────────────────────────────────────
+  Build:
+    Dev       → Implements + unit tests
+    Reviewer  → Code review + doc compliance
+       ↳ CHANGES REQUESTED → Dev → Reviewer (3x)
+    QA        → Implements + runs test plan
+       ↳ FAIL → Dev → Reviewer → QA (3x)
+
+  Validation:
+    QA        → E2E + regression
+    Reviewer  → Performance + security validation
+    PM        → UAT against acceptance criteria
+    ↳ Gate: REJECTED → Dev fixes → re-validate (2x)
 ```
 
 ## Install
@@ -79,15 +83,18 @@ Phase 5: Release ─────────────────────
 ## Usage
 
 ```bash
-# Plan first, build later
-/claude-squad:discovery build user authentication with email and password
+# Step by step
+/claude-squad:prd build user authentication with email and password
+/claude-squad:design
 /claude-squad:implement
 
-# Or run everything at once
-/claude-squad:squad build user authentication with email and password
+# Or jump to any step with context
+/claude-squad:design "here's what I want to build: [paste PRD]"
+/claude-squad:implement "here's the design: [paste Design Document]"
 ```
 
 ## Requirements
 
 - [Claude Code](https://claude.ai/claude-code) CLI
 - [context7 MCP server](https://github.com/upstash/context7) configured
+- [pencil MCP server](https://pencil.dev) configured (for UI prototyping with .pen files)
