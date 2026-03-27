@@ -35,7 +35,10 @@ This skill requires the following context (produced by `/prd`):
 - **Tech Lead output** — Requirements, subtasks, and feasibility assessment
 - **Designer output** — Early UX perspective
 
-If this context is available from a previous `/prd` run in the same conversation, use it directly. If not, ask the user to provide or paste the PRD.
+**How to get the PRD context:**
+1. **File reference (preferred for fresh context):** If the user provides a file path (e.g., `/design docs/squad/2026-03-27-prd-feature.md`), read that file to load the PRD.
+2. **Same conversation:** If this context is available from a previous `/prd` run in the same conversation, use it directly.
+3. **Ask the user:** If neither is available, ask the user to provide or paste the PRD.
 
 ---
 
@@ -175,6 +178,14 @@ Present the full Design Document to the user:
 
 ## Output: Design Document
 
+After all steps complete, compile the Design Document and **save it to a file**.
+
+### Save the Design Document
+
+1. Ensure the `docs/squad/` directory exists in the project root (create it if needed).
+2. Generate the filename using today's date and a kebab-case title derived from the feature: `docs/squad/yyyy-MM-dd-design-<feature-title>.md` (e.g., `docs/squad/2026-03-27-design-user-authentication.md`).
+3. Write the full Design Document content below to that file.
+
 ```
 ## Design Document: [Feature title]
 
@@ -190,6 +201,9 @@ Present the full Design Document to the user:
 ### 4. API Contracts & Backend Feasibility (Backend Dev)
 [API contracts — endpoints, data shapes, auth. Backend review — complexity, existing code reuse]
 
+### PRD Reference
+[Path to the PRD file used as input, e.g., docs/squad/2026-03-27-prd-user-authentication.md]
+
 ### Documentation References
 | Library/Framework | Version | Key APIs/patterns verified | Source |
 |---|---|---|---|
@@ -203,4 +217,14 @@ Present the full Design Document to the user:
 - API Contracts: [Defined]
 ```
 
-**Ask the user:** "Design complete. Run `/implement` to start building, or adjust the design first."
+### Next Steps
+
+After saving, tell the user the file path and ask:
+
+> **Design Document saved to `docs/squad/yyyy-MM-dd-design-<feature-title>.md`.**
+>
+> What would you like to do next?
+> 1. **Adjust the design** — tell me what to change and I'll update the document.
+> 2. **Move to Implementation** — clear the context and start a new conversation with: `/implement docs/squad/yyyy-MM-dd-prd-<feature-title>.md docs/squad/yyyy-MM-dd-design-<feature-title>.md`
+
+Replace the placeholder paths with the actual file paths used.

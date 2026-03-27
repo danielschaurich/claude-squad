@@ -149,7 +149,13 @@ Wait for Designer output before proceeding.
 
 ## Output: PRD
 
-After all steps complete, compile and present the PRD to the user.
+After all steps complete, compile the PRD and **save it to a file**.
+
+### Save the PRD
+
+1. Ensure the `docs/squad/` directory exists in the project root (create it if needed).
+2. Generate the filename using today's date and a kebab-case title derived from the feature: `docs/squad/yyyy-MM-dd-prd-<feature-title>.md` (e.g., `docs/squad/2026-03-27-prd-user-authentication.md`).
+3. Write the full PRD content below to that file.
 
 ```
 ## PRD: [Feature title]
@@ -180,4 +186,14 @@ After all steps complete, compile and present the PRD to the user.
 - UX: [Concerns raised / All clear]
 ```
 
-**Ask the user:** "PRD complete. Run `/design` to start designing, or adjust the plan first."
+### Next Steps
+
+After saving, tell the user the file path and ask:
+
+> **PRD saved to `docs/squad/yyyy-MM-dd-prd-<feature-title>.md`.**
+>
+> What would you like to do next?
+> 1. **Adjust the PRD** — tell me what to change and I'll update the document.
+> 2. **Move to Design** — clear the context and start a new conversation with: `/design docs/squad/yyyy-MM-dd-prd-<feature-title>.md`
+
+Replace the placeholder path with the actual file path used.

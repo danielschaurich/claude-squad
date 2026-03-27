@@ -37,7 +37,10 @@ This skill requires the following context (produced by `/prd` + `/design`):
 - **Backend Dev output** — API contracts, backend feasibility notes
 - **UI mockups** — Any `.pen` file paths (if applicable)
 
-If this context is available from previous `/prd` and `/design` runs in the same conversation, use it directly. If not, ask the user to provide or paste the PRD and Design Document.
+**How to get context:**
+1. **File references (preferred for fresh context):** If the user provides file paths (e.g., `/implement docs/squad/2026-03-27-prd-feature.md docs/squad/2026-03-27-design-feature.md`), read those files to load the PRD and Design Document.
+2. **Same conversation:** If this context is available from previous `/prd` and `/design` runs in the same conversation, use it directly.
+3. **Ask the user:** If neither is available, ask the user to provide or paste the PRD and Design Document.
 
 ---
 
