@@ -1,15 +1,15 @@
 ---
 name: design
-description: Design phase — Designer creates UX flows and prototypes, PM validates against user needs, Engineers review technical feasibility. Output feeds into /implement.
+description: Design phase — Designer creates UX flows and prototypes, PM validates against user needs, Engineers review technical feasibility. Output feeds into /prd.
 ---
 
 # /design — Design & Prototype
 
 Run the Design phase: create UX flows, prototype the UI, and validate the design with PM and Engineers. **UI prototyping via pencil MCP. All technical decisions grounded in current stack docs via context7.**
 
-This command expects the **PRD** produced by `/prd` as context. If not provided, it will ask the user for the User Story, acceptance criteria, and requirements.
+This command expects the **Idea Document** produced by `/idea` as context. If not provided, it will ask the user for the chosen direction, key insights, and UX vision.
 
-The output of this command is a **Design Document** — a self-contained artifact that feeds directly into `/implement`.
+The output of this command is a **Design Document** — a self-contained artifact that feeds directly into `/prd`.
 
 ## Core Principle: Documentation-Driven Development
 
@@ -30,15 +30,16 @@ Every agent MUST consult the current documentation for the libraries and framewo
 
 ## Input
 
-This skill requires the following context (produced by `/prd`):
-- **PM output** — User Story and acceptance criteria
-- **Tech Lead output** — Requirements, subtasks, and feasibility assessment
-- **Designer output** — Early UX perspective
+This skill requires the following context (produced by `/idea`):
+- **PM output** — Problem exploration, reframings, audience analysis
+- **Tech Lead output** — Stack opportunities, complexity assessment, technical creativity
+- **Designer output** — User journey stories, emotional design, interaction ideas
+- **Chosen Direction** — The concept(s) the user confirmed
 
-**How to get the PRD context:**
-1. **File reference (preferred for fresh context):** If the user provides a file path (e.g., `/design docs/squad/2026-03-27-prd-feature.md`), read that file to load the PRD.
-2. **Same conversation:** If this context is available from a previous `/prd` run in the same conversation, use it directly.
-3. **Ask the user:** If neither is available, ask the user to provide or paste the PRD.
+**How to get the Idea context:**
+1. **File reference (preferred for fresh context):** If the user provides a file path (e.g., `/design docs/squad/2026-03-31-idea-feature.md`), read that file to load the Idea Document.
+2. **Same conversation:** If this context is available from a previous `/idea` run in the same conversation, use it directly.
+3. **Ask the user:** If neither is available, ask the user to provide or paste the Idea Document.
 
 ---
 
@@ -50,11 +51,17 @@ Prompt the agent:
 ```
 You are the Designer agent. Follow the instructions in the designer agent definition.
 
-Here is the PM's User Story:
-[Insert PM output]
+Here is the chosen direction from the Idea phase:
+[Insert chosen direction from Idea Document]
 
-Here is the Tech Lead's requirements:
-[Insert Tech Lead output]
+Here is the PM's problem exploration:
+[Insert PM output from Idea Document]
+
+Here is the Tech Lead's technical landscape:
+[Insert Tech Lead output from Idea Document]
+
+Here is the Designer's UX vision from Ideation:
+[Insert Designer output from Idea Document]
 
 {{IF .pen files found}}
 The project has UI mockups in these .pen files: [list paths]. Use the pencil MCP tools (batch_get, get_screenshot) to analyze them deeply. Never use Read or Grep on .pen files.
@@ -88,17 +95,21 @@ Prompt the agent:
 ```
 You are the PM agent. Follow the instructions in the PM agent definition.
 
-Here is the original User Story and acceptance criteria:
-[Insert PM output from PRD]
+Here is the chosen direction from the Idea phase:
+[Insert chosen direction from Idea Document]
+
+Here is the PM's original problem exploration:
+[Insert PM output from Idea Document]
 
 Here is the Designer's UI Design:
 [Insert Designer output]
 
-Validate the design against the User Story:
-1. Does every acceptance criterion have a clear UI representation in the design?
-2. Are there acceptance criteria that the design doesn't address?
-3. Does the design introduce scope that wasn't in the User Story? Flag it.
-4. From the user's perspective, does this design solve the original problem?
+Validate the design against the chosen direction and problem exploration:
+1. Does the design address the core problem identified during Ideation?
+2. Does the design align with the chosen direction?
+3. Does the design introduce scope that wasn't part of the chosen direction? Flag it.
+4. From the user's perspective, does this design feel right for the problem?
+5. Are there aspects of the problem that the design doesn't address?
 
 Produce a brief Design Validation — APPROVED or CHANGES NEEDED with specific feedback.
 ```
@@ -122,8 +133,8 @@ You are the Frontend Dev agent. Follow the instructions in the frontend-dev agen
 Here is the Designer's UI Design:
 [Insert Designer output]
 
-Here is the Tech Lead's requirements:
-[Insert Tech Lead output]
+Here is the Tech Lead's technical landscape from Ideation:
+[Insert Tech Lead output from Idea Document]
 
 This is a DESIGN REVIEW, not implementation. Your job is to:
 1. Review the component specs — are they implementable with the current frontend stack?
@@ -146,8 +157,8 @@ You are the Backend Dev agent. Follow the instructions in the backend-dev agent 
 Here is the Designer's UI Design:
 [Insert Designer output]
 
-Here is the Tech Lead's requirements:
-[Insert Tech Lead output]
+Here is the Tech Lead's technical landscape from Ideation:
+[Insert Tech Lead output from Idea Document]
 
 This is a DESIGN REVIEW, not implementation. Your job is to:
 1. Review what data and APIs the UI design requires.
@@ -201,8 +212,8 @@ After all steps complete, compile the Design Document and **save it to a file**.
 ### 4. API Contracts & Backend Feasibility (Backend Dev)
 [API contracts — endpoints, data shapes, auth. Backend review — complexity, existing code reuse]
 
-### PRD Reference
-[Path to the PRD file used as input, e.g., docs/squad/2026-03-27-prd-user-authentication.md]
+### Idea Document Reference
+[Path to the Idea Document used as input, e.g., docs/squad/2026-03-31-idea-smart-notifications.md]
 
 ### Documentation References
 | Library/Framework | Version | Key APIs/patterns verified | Source |
@@ -225,6 +236,6 @@ After saving, tell the user the file path and ask:
 >
 > What would you like to do next?
 > 1. **Adjust the design** — tell me what to change and I'll update the document.
-> 2. **Move to Implementation** — clear the context and start a new conversation with: `/implement docs/squad/yyyy-MM-dd-prd-<feature-title>.md docs/squad/yyyy-MM-dd-design-<feature-title>.md`
+> 2. **Move to PRD** — clear the context and start a new conversation with: `/prd docs/squad/yyyy-MM-dd-idea-<concept-title>.md docs/squad/yyyy-MM-dd-design-<feature-title>.md`
 
 Replace the placeholder paths with the actual file paths used.
